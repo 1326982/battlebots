@@ -26,6 +26,7 @@ public class MenuManager : MonoBehaviour {
     [SerializeField] private GameObject modalBox;
     [SerializeField] public EventSystem events;
     [SerializeField] private PoubelleUI trashUI;
+    [SerializeField] private GameObject PanneauMulti;
 
     private Bot showedBot;
 
@@ -347,6 +348,7 @@ public class MenuManager : MonoBehaviour {
             
             isEditing = false;
         }
+        PanneauMulti.SetActive(false);
         barreMenu.montrerPrincipal();
     }
     public void callsubCustomize(){
@@ -355,6 +357,9 @@ public class MenuManager : MonoBehaviour {
     public void calldisconnect(){
         PlayerPrefs.SetString("apiKey","ERASED");
         GameManager.instance.changeScene(Scenes.Login);
+    }
+    public void callmultiplayer() {
+        PanneauMulti.SetActive(true);
     }
 
     public void savebotbutton(){

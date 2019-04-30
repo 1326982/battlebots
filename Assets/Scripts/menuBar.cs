@@ -21,7 +21,7 @@ public class menuBar : MonoBehaviour   {
     private List<GameObject> vieuxBouton = new List<GameObject>(){};
     /*------------------------------------------------------------------------------------------------------------------------------------------- */
     private ItemInfo[] menuPrincipal = new ItemInfo[4]{ new ItemInfo("Offline Battle","icon_place","battle","offline",false),
-                                                        new ItemInfo("Online Battle","icon_place","battle","online",false),
+                                                        new ItemInfo("Online Battle","icon_place","multiplayer","online",false),
                                                         new ItemInfo("Customize Robot","icon_place","customize","",false),
                                                         new ItemInfo("Settings","icon_place","settings","",false)  
                                                         };
