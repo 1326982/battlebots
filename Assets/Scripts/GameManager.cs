@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour {
 
     public void startBattle(string battleOnOff) {
         if(battleOnOff ==  "online") {
-            StartCoroutine(loadBattleRoutine(BattleType.Online, opponentBotID)); 
+            StartCoroutine(loadBattleRoutine(BattleType.OnlineQuick, opponentBotID)); 
         }else if(battleOnOff == "offline") {
             StartCoroutine(loadBattleRoutine(BattleType.Offline)); 
         }
@@ -88,13 +88,13 @@ public class GameManager : MonoBehaviour {
     private IEnumerator presetBattle(BattleType type , int idBotOpponent = 0) {
         battleSettings = new BattleSettings();
         if(type == BattleType.Offline){
-            yield return StartCoroutine("generateOpponent");
+            yield return StartCoroutine(generateOpponent("singleplayer"));
             while(!opponentLoaded) {
                 yield return new WaitForSeconds(0.5f);
             }
             battleSettings.visitorbot = opponent;
-        }else {
-            yield return StartCoroutine(fetchOpponent(idBotOpponent));
+        }else if(type == BattleType.OnlineQuick) {
+            yield return StartCoroutine(generateOpponent("multiplayer"));
             while(!opponentLoaded) {
                 yield return new WaitForSeconds(0.5f);
             }
@@ -107,8 +107,9 @@ public class GameManager : MonoBehaviour {
         yield return null;
     }
 
-    private IEnumerator generateOpponent() {
-        string query = "&action=loadBotComp";
+    private IEnumerator generateOpponent(string typeOpponent) {
+
+        string query = (typeOpponent == "singleplayer")?"&action=loadBotComp":"&action=loadRandomBot&username="+user.username+"&userRank="+user.userClassement;
         yield return StartCoroutine(DatabaseManager.instance.Query(loadOpponent,query));
         yield return null;
     }
@@ -203,5 +204,5 @@ public enum Scenes {
     MainMenu, Battle, sceneLoader, Login, Auth, botMaker
 }
 public enum BattleType {
-    Online , Offline
+    OnlineQuick , Offline
 }

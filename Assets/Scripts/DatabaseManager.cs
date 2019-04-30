@@ -60,40 +60,19 @@ public class DatabaseManager : MonoBehaviour {
         yield return StartCoroutine(DatabaseManager.instance.Query(readbotsEdit,query));
         yield return null;
     }
-    
+
 
     private void readbots(string response){
         HttpBotsWrapper bots = JsonUtility.FromJson<HttpBotsWrapper>(response);
-        BotBuilder[] botArrayTmp = new BotBuilder[3] {new BotBuilder(),new BotBuilder(),new BotBuilder()};
-
-        foreach(HttpBots botInfo in bots.wrap) {
-            int id = int.Parse(botInfo.botsSlot);
-            BotBuilder botAct = botArrayTmp[id];
-            botAct.platform = botInfo.botsPlatform;
-            botAct.botID = botInfo.botsId;
-            botAct.rotationSpeed = float.Parse(botInfo.botsRotationSpeed);
-            botAct.speed = float.Parse(botInfo.botsSpeed);
-            botAct.weight = float.Parse(botInfo.botsWeight);
-            string jsonAnchorPrepared = "{\"botsAnchorInfo\":" + botInfo.botsAnchorInfo + "}" ;
-            JsonAnchorWrapper listPartsJson = JsonUtility.FromJson<JsonAnchorWrapper>(jsonAnchorPrepared);
-            botAct.listParts = new AnchorInfo[listPartsJson.botsAnchorInfo.Length];
-            int i =0;
-            foreach(JsonAnchor jsonAnchor in listPartsJson.botsAnchorInfo) {
-                botAct.listParts[i] = new AnchorInfo();
-                AnchorInfo AnchorAct = botAct.listParts[i];
-                AnchorAct.anchorPos = jsonAnchor.anchorPos;
-                AnchorAct.itemName = jsonAnchor.itemName;
-                i++;
-            }
-            if(botInfo.botsPrefered == "true"){
-                PlayerPrefs.SetInt("botsPrefered",id);
-                GameManager.instance.SelectedBotIndex = id;
-            }
-        }
-        GameManager.instance.LoadedBots = botArrayTmp;
+        GameManager.instance.LoadedBots = buildBotArray(true, bots);
     }
     private void readbotsEdit(string response){
         HttpBotsWrapper bots = JsonUtility.FromJson<HttpBotsWrapper>(response);
+        GameManager.instance.LoadedBots = buildBotArray(false, bots);
+        MenuManager.instance.spawnbotEdit();
+    }
+
+    private BotBuilder[] buildBotArray(bool replaceSelected, HttpBotsWrapper bots){
         BotBuilder[] botArrayTmp = new BotBuilder[3] {new BotBuilder(),new BotBuilder(),new BotBuilder()};
 
         foreach(HttpBots botInfo in bots.wrap) {
@@ -115,11 +94,15 @@ public class DatabaseManager : MonoBehaviour {
                 AnchorAct.itemName = jsonAnchor.itemName;
                 i++;
             }
+            if(replaceSelected) {
+                if(botInfo.botsPrefered == "true"){
+                    PlayerPrefs.SetInt("botsPrefered",id);
+                    GameManager.instance.SelectedBotIndex = id;
+                }
+            }
         }
-        GameManager.instance.LoadedBots = botArrayTmp;
-        MenuManager.instance.spawnbotEdit();
+        return botArrayTmp;
     }
-
 
 
 }

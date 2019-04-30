@@ -314,6 +314,7 @@ public class MenuManager : MonoBehaviour {
         GameManager.instance.GetActiveBot.platform = modalParamBase;
         GameManager.instance.GetActiveBot.listParts = new AnchorInfo[0];
         spawnEditBot();
+        hasChangedSinceLastSave = true;
     }
 
     public void callplacerItem() {
