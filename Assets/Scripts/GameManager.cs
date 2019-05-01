@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour {
     
     private BotBuilder opponent;
     private int opponentBotID;
+    private HttpOpponent nextOpponent;
     private bool localLoaded = false;
     private bool opponentLoaded = false;
     private bool battleReady = false;
@@ -62,6 +63,8 @@ public class GameManager : MonoBehaviour {
             StartCoroutine(loadBattleRoutine(BattleType.OnlineQuick, opponentBotID)); 
         }else if(battleOnOff == "offline") {
             StartCoroutine(loadBattleRoutine(BattleType.Offline)); 
+        }else if(battleOnOff == "onlineFriend") {
+            StartCoroutine(loadBattleRoutine(BattleType.OnlineSetup)); 
         }
     }
 
@@ -99,6 +102,12 @@ public class GameManager : MonoBehaviour {
                 yield return new WaitForSeconds(0.5f);
             }
             battleSettings.visitorbot = opponent;
+        }else if (type == BattleType.OnlineSetup){
+            yield return StartCoroutine(generateOpponent("friendly"));
+            while(!opponentLoaded) {
+                yield return new WaitForSeconds(0.5f);
+            }
+            battleSettings.visitorbot = opponent;
         }
         yield return battleSettings.localbot = GetActiveBot;
         localLoaded = true;
@@ -108,8 +117,18 @@ public class GameManager : MonoBehaviour {
     }
 
     private IEnumerator generateOpponent(string typeOpponent) {
-
-        string query = (typeOpponent == "singleplayer")?"&action=loadBotComp":"&action=loadRandomBot&username="+user.username+"&userRank="+user.userClassement;
+        string query = "";
+        switch(typeOpponent){
+            case "singleplayer":
+                query = "&action=loadBotComp";
+            break;
+            case "multiplayer":
+                query = "&action=loadRandomBot&username="+user.username+"&userRank="+user.userClassement;
+            break;
+            case "friendly":
+                query = "&action=loadBotWithUser&opponentID="+nextOpponent.id;
+            break;
+        }
         yield return StartCoroutine(DatabaseManager.instance.Query(loadOpponent,query));
         yield return null;
     }
@@ -154,6 +173,9 @@ public class GameManager : MonoBehaviour {
 
     public UserInfo UserInfoAct {
         get{return user;}
+    }
+    public void SetOpponent(HttpOpponent infos) {
+        nextOpponent = infos;
     }
 
     public BotBuilder OpponentBot {
@@ -204,5 +226,5 @@ public enum Scenes {
     MainMenu, Battle, sceneLoader, Login, Auth, botMaker
 }
 public enum BattleType {
-    OnlineQuick , Offline
+    OnlineQuick , Offline, OnlineSetup
 }

@@ -14,14 +14,16 @@ public class CellInfo : MonoBehaviour
     private bool mutualFriend;
     private int friendshipID = 0;
     private int userID; 
+    private HttpOpponent info;
 
-    public void init(int level, int ranking, string username, int userid, bool mutual, int friendshipid ){
+    public void init(int level, int ranking, string username, int userid, bool mutual, int friendshipid,HttpOpponent infos ){
         txtLevel.text = level.ToString();
         txtRanking.text = "Rank "+ranking;
         txtUsername.text = username;
         userID = userid;
         mutualFriend = mutual;
         friendshipID = friendshipid;
+        info = infos;
         buttonManaging();
     }
     public void buttonManaging(){
@@ -36,7 +38,8 @@ public class CellInfo : MonoBehaviour
     }
     
     public void launchBattle() {
-        
+        GameManager.instance.SetOpponent(info);
+        GameManager.instance.startBattle("onlineFriend");
     }
     public void askFriendship() {
 

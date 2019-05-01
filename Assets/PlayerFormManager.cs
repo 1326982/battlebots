@@ -52,7 +52,7 @@ public class PlayerFormManager : MonoBehaviour
         foreach(HttpOpponent user in users.wrap){
             GameObject cell = Instantiate(perfabListCell) as GameObject;
             cell.GetComponent<RectTransform>().SetParent(displayContent.transform,false);
-            cell.GetComponent<CellInfo>().init(user.level,user.rank,user.username,user.id,user.mutualFriend,user.friendshipId);
+            cell.GetComponent<CellInfo>().init(user.level,user.rank,user.username,user.id,user.mutualFriend,user.friendshipId,user);
         }
         
     }
