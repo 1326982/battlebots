@@ -37,6 +37,35 @@ public class DatabaseManager : MonoBehaviour {
         yield return null;
 
     }
+    public IEnumerator friendRequest(int otherID, int notfiID){
+        string query = "&action=askFriendShip&usersID="+ PlayerPrefs.GetString("usersID")+"&otherID="+otherID;
+        if(notfiID == 0){
+            yield return StartCoroutine(Query(PlayerFormManager.instance.asyncRefresh, query));
+            
+        }else {
+            yield return StartCoroutine(Query(noUse, query));
+            deleteNotification(notfiID);
+        }
+    }
+    public IEnumerator deleteFriend(int friendshipID, int notfiID){
+        string query = "&action=deleteFriendShip&friendShipID="+friendshipID;
+        Debug.Log(query);
+        if(notfiID == 0){
+            yield return StartCoroutine(Query(PlayerFormManager.instance.asyncRefresh, query));
+            
+        }else {
+            yield return StartCoroutine(Query(noUse, query));
+            deleteNotification(notfiID);
+        }
+
+    }
+    public void noUse(string x){
+
+    }
+    public void deleteNotification(int notifID){
+        string query = "&action=deleteNotification&notifID="+notifID;
+        StartCoroutine(Query(NotificationManager.instance.asyncRefresh, query));
+    }
 
     public IEnumerator loadPlayer(){
         print("playerLoading");

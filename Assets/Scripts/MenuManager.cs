@@ -26,7 +26,10 @@ public class MenuManager : MonoBehaviour {
     [SerializeField] private GameObject modalBox;
     [SerializeField] public EventSystem events;
     [SerializeField] private PoubelleUI trashUI;
-    [SerializeField] private GameObject PanneauMulti;
+    [SerializeField] private GameObject multiplayerPanel;
+    [SerializeField] private GameObject notificationsPanel;
+    [SerializeField] private Text notificationCountText;
+    [SerializeField] private GameObject notificationPastille;
 
     private Bot showedBot;
 
@@ -65,6 +68,7 @@ public class MenuManager : MonoBehaviour {
         panelinfo.sliderXp.value = xp;
         botContainer = new GameObject();
         spawnEditBot();
+        getNotificationCount();
     }
 
 
@@ -317,6 +321,20 @@ public class MenuManager : MonoBehaviour {
         hasChangedSinceLastSave = true;
     }
 
+    public void getNotificationCount(){
+        string query= "&action=getNotificationsCount&usersID="+PlayerPrefs.GetString("usersID");
+        StartCoroutine(DatabaseManager.instance.Query(showNotificationCount,query));
+    }
+    public void showNotificationCount(string count){
+        if(count == "0"){
+            notificationPastille.SetActive(false);
+        }else{
+            notificationCountText.text = count;
+            notificationPastille.SetActive(true);
+        }
+        
+    }
+
     public void callplacerItem() {
         blockItemClick = false;        
         cameraMenu.blockCam = true;
@@ -328,6 +346,7 @@ public class MenuManager : MonoBehaviour {
        
 
     }
+
     public void calltest(){
         GameManager.instance.changeScene(Scenes.botMaker);
     }
@@ -349,7 +368,9 @@ public class MenuManager : MonoBehaviour {
             
             isEditing = false;
         }
-        PanneauMulti.SetActive(false);
+        getNotificationCount();
+        multiplayerPanel.SetActive(false);
+        notificationsPanel.SetActive(false);
         barreMenu.montrerPrincipal();
     }
     public void callsubCustomize(){
@@ -360,7 +381,10 @@ public class MenuManager : MonoBehaviour {
         GameManager.instance.changeScene(Scenes.Login);
     }
     public void callmultiplayer() {
-        PanneauMulti.SetActive(true);
+        multiplayerPanel.SetActive(true);
+    }
+    public void callshowNotifications(){
+        notificationsPanel.SetActive(true);
     }
 
     public void savebotbutton(){

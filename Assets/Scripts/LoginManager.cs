@@ -73,7 +73,9 @@ public class LoginManager : MonoBehaviour {
         print(response);
         HttpGeneric token = JsonUtility.FromJson<HttpGeneric>(response);
         if(token.error == "ok"){
-            
+            usernameLogin.text = usernameSign.text;
+            passwordLogin.text = passwordSign.text;
+            login();
         }else {
             errorTxt.text = token.error;
         }

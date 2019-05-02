@@ -84,6 +84,10 @@ public class PlayerFormManager : MonoBehaviour
         foreach (Transform child in displayContent.transform) children.Add(child.gameObject);
         children.ForEach(child => Destroy(child));
     }
+
+    public void asyncRefresh(string x){
+        refreshDisplay();
+    }
 }
 public enum DisplaySection {
     Friends, Browse, Search

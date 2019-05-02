@@ -18,6 +18,13 @@ public class PoubelleUI : MonoBehaviour
     private void Start() {
         _rect = GetComponent<RectTransform>();
         m_Raycaster = GetComponent<GraphicRaycaster>();
+        StartCoroutine(animationDelete(false));
+    }
+    private void OnEnable() {
+        if(_rect){
+            StartCoroutine(animationDelete(false));
+        }
+        
     }
 
     // Update is called once per frame
@@ -37,7 +44,7 @@ public class PoubelleUI : MonoBehaviour
                     if(result.gameObject == gameObject){
                         MenuManager.instance.trashCanShortcut();
                         isSelecting=false;
-                        if(!inAnimation){StartCoroutine(animationDelete());}
+                        if(!inAnimation){StartCoroutine(animationDelete(true));}
                     }
                 }
 
@@ -59,7 +66,8 @@ public class PoubelleUI : MonoBehaviour
         return null;
     }
 
-    private IEnumerator animationDelete(){
+    private IEnumerator animationDelete(bool willDisable){
+        inAnimation = true;
         _rect.localScale = new Vector3(1,1,1);
         //phase GRRRROOOOOOWWWW
         while(_rect.localScale.x <= 1.4f){
@@ -76,7 +84,11 @@ public class PoubelleUI : MonoBehaviour
             _rect.localScale = new Vector3(x,y,z);
             yield return new WaitForSeconds(0.01f);
         }
-        this.gameObject.SetActive(false);
+        if(willDisable){
+            this.gameObject.SetActive(false);
+        }else {
+            inAnimation = false;
+        }
         yield return null;
     }
 

@@ -42,9 +42,9 @@ public class CellInfo : MonoBehaviour
         GameManager.instance.startBattle("onlineFriend");
     }
     public void askFriendship() {
-
+        StartCoroutine(DatabaseManager.instance.friendRequest(info.id,0));
     }
     public void deleteFriendship(){
-
+        StartCoroutine(DatabaseManager.instance.deleteFriend(friendshipID,0));
     }
 }
