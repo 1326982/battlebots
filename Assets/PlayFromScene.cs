@@ -4,6 +4,7 @@
  using System.Linq;
  using System.Collections;
  
+ #if UNITY_EDITOR
  [ExecuteInEditMode]
  public class PlayFromScene : EditorWindow {
      [SerializeField] string lastScene="";
@@ -64,3 +65,4 @@
          return sb.ToString();
      }
  }
+ #endif

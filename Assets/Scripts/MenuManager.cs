@@ -124,7 +124,7 @@ public class MenuManager : MonoBehaviour {
 
                 }// souris Dev
                 
-            }// souris Dev
+            }// souris Dev 
             if( Input.GetMouseButtonDown(0) ) {
                 Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
                 RaycastHit hit;
@@ -145,7 +145,6 @@ public class MenuManager : MonoBehaviour {
             }
         }
         if(Input.touchCount>0){
-            Debug.Log("ya "+Input.touchCount+" touchs");
             for(int i = 0;i<Input.touchCount;i++){
                 Touch toucheAct = Input.GetTouch(i);
                 
@@ -210,6 +209,8 @@ public class MenuManager : MonoBehaviour {
                         }
                     }  
                 }else if(slideSelectedPartInDMs!=null){
+                    Ray ray = Camera.main.ScreenPointToRay( toucheAct.position );
+                    RaycastHit hit;
                     selectedPart = slideSelectedPartInDMs;
                     slideSelectedPartInDMs = null;
                     selectedPart.GetComponent<Collider>().enabled = false;
@@ -217,6 +218,8 @@ public class MenuManager : MonoBehaviour {
                     trashUI.fingerid=SelectedPartFingerID;
                     trashUI.isSelecting = true;
                     trashUI.gameObject.SetActive(true);
+                    if( Physics.Raycast( ray, out hit, 100 ) ) {
+                    selectedPart.transform.position = hit.point;}
                 }
             }
         }

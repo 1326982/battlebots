@@ -78,8 +78,6 @@ public class Bot : MonoBehaviour {
     }
 
 
-
-
     public void Build(BotBuilder instructions){
         coreDest = transform.Find("core").GetComponent<Destroyable>();
         baseName = instructions.platform;
