@@ -18,11 +18,13 @@ using UnityEngine.UI;
 public class menuBar : MonoBehaviour   {
     private RectTransform rTransform;
     [SerializeField] private GameObject EmptyItem;
+    [SerializeField] private GameObject notificationBt;
     private List<GameObject> vieuxBouton = new List<GameObject>(){};
     /*------------------------------------------------------------------------------------------------------------------------------------------- */
-    private ItemInfo[] menuPrincipal = new ItemInfo[4]{ new ItemInfo("Offline Battle","icon_place","battle","offline",false),
-                                                        new ItemInfo("Online Battle","icon_place","multiplayer","online",false),
+    private ItemInfo[] menuPrincipal = new ItemInfo[5]{ new ItemInfo("Training","icon_place","battle","offline",false),
+                                                        new ItemInfo("Battle","icon_place","multiplayer","online",false),
                                                         new ItemInfo("Customize Robot","icon_place","customize","",false),
+                                                        new ItemInfo("Notifications","icon_place","showNotifications","Notifications",false),
                                                         new ItemInfo("Settings","icon_place","settings","",false)  
                                                         };
     /*------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -62,17 +64,32 @@ public class menuBar : MonoBehaviour   {
         float menuFirstPos = (-rTransform.rect.width/2)+(division/2);
 
         for(int i = 0; i<menu.Length;i++){
-            GameObject newItem = Instantiate(EmptyItem,new Vector2(0,0),rTransform.rotation);
-            vieuxBouton.Add(newItem);
-            newItem.GetComponent<menuItem>().callback = menu[i].callback;
-            newItem.GetComponent<menuItem>().texteItem.text = menu[i].name;
-            newItem.GetComponent<menuItem>().nomPiece = menu[i].nomPiece;
-            newItem.transform.SetParent(gameObject.transform,false);
-            RectTransform newItemRT =newItem.GetComponent<RectTransform>();
-            newItemRT.sizeDelta = new Vector2(division , rTransform.sizeDelta.y);
-            newItemRT.localPosition = new Vector3((menuFirstPos+(division*i)),0,0);
-            if(menu[i].isMiniThumb) {
-                StartCoroutine(loadThumb(newItem.GetComponent<menuItem>().imageItem,menu[i].nomPiece));
+            if(menu[i].nomPiece != "Notifications"){
+                GameObject newItem = Instantiate(EmptyItem,new Vector2(0,0),rTransform.rotation);
+                vieuxBouton.Add(newItem);
+                newItem.GetComponent<menuItem>().callback = menu[i].callback;
+                newItem.GetComponent<menuItem>().texteItem.text = menu[i].name;
+                newItem.GetComponent<menuItem>().nomPiece = menu[i].nomPiece;
+                newItem.transform.SetParent(gameObject.transform,false);
+                RectTransform newItemRT =newItem.GetComponent<RectTransform>();
+                newItemRT.sizeDelta = new Vector2(division , rTransform.sizeDelta.y);
+                newItemRT.localPosition = new Vector3((menuFirstPos+(division*i)),0,0);
+                if(menu[i].isMiniThumb) {
+                    StartCoroutine(loadThumb(newItem.GetComponent<menuItem>().imageItem,menu[i].nomPiece));
+                }
+            }else {
+                GameObject newItem = Instantiate(notificationBt,new Vector2(0,0),rTransform.rotation);
+                vieuxBouton.Add(newItem);
+                newItem.GetComponent<menuItem>().callback = menu[i].callback;
+                newItem.GetComponent<menuItem>().texteItem.text = menu[i].name;
+                newItem.GetComponent<menuItem>().nomPiece = menu[i].nomPiece;
+                newItem.transform.SetParent(gameObject.transform,false);
+                RectTransform newItemRT =newItem.GetComponent<RectTransform>();
+                newItemRT.sizeDelta = new Vector2(division , rTransform.sizeDelta.y);
+                newItemRT.localPosition = new Vector3((menuFirstPos+(division*i)),0,0);
+                if(menu[i].isMiniThumb) {
+                    StartCoroutine(loadThumb(newItem.GetComponent<menuItem>().imageItem,menu[i].nomPiece));
+                }
             }
         }
     }

@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 
 public class ProfileInfoPanel : MonoBehaviour {
-   [SerializeField] public Text txtnom;
    [SerializeField] public Text txtlvl;
    [SerializeField] public Text txtranking;
    [SerializeField] public Slider sliderXp;

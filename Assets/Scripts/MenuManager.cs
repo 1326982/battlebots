@@ -60,15 +60,13 @@ public class MenuManager : MonoBehaviour {
     }
     private void Start() {
         UserInfo info = GameManager.instance.UserInfoAct;
-        panelinfo.txtranking.text = "Ranking "+ info.userClassement;
-        panelinfo.txtnom.text = info.username;
+        panelinfo.txtranking.text =  info.userClassement.ToString();
         panelinfo.txtlvl.text = info.userLvl.ToString();
         panelinfo.textXp.text = info.userXp + "/" + info.userNextLvlXp;
         float xp = (float)info.userXp/(float)info.userNextLvlXp;
         panelinfo.sliderXp.value = xp;
         botContainer = new GameObject();
         spawnEditBot();
-        getNotificationCount();
     }
 
 
@@ -283,7 +281,8 @@ public class MenuManager : MonoBehaviour {
         return Resources.Load(nomItem) as GameObject;
     }
 
-    public void switchbot(int pos) {
+    public void switchbot(Dropdown dropdown) {
+        int pos = dropdown.value;
         if(isEditing && hasChangedSinceLastSave){
             GameObject modal = Instantiate(modalBox,new Vector3(0, 0, 0), Quaternion.identity);
             modal.transform.SetParent (GameObject.FindGameObjectWithTag("Canvas").transform, false);
@@ -324,19 +323,19 @@ public class MenuManager : MonoBehaviour {
         hasChangedSinceLastSave = true;
     }
 
-    public void getNotificationCount(){
-        string query= "&action=getNotificationsCount&usersID="+PlayerPrefs.GetString("usersID");
-        StartCoroutine(DatabaseManager.instance.Query(showNotificationCount,query));
-    }
-    public void showNotificationCount(string count){
-        if(count == "0"){
-            notificationPastille.SetActive(false);
-        }else{
-            notificationCountText.text = count;
-            notificationPastille.SetActive(true);
-        }
+    // public void getNotificationCount(){
+    //     string query= "&action=getNotificationsCount&usersID="+PlayerPrefs.GetString("usersID");
+    //     StartCoroutine(DatabaseManager.instance.Query(showNotificationCount,query));
+    // }
+    // public void showNotificationCount(string count){
+    //     if(count == "0"){
+    //         notificationPastille.SetActive(false);
+    //     }else{
+    //         notificationCountText.text = count;
+    //         notificationPastille.SetActive(true);
+    //     }
         
-    }
+    // }
 
     public void callplacerItem() {
         blockItemClick = false;        
@@ -371,7 +370,6 @@ public class MenuManager : MonoBehaviour {
             
             isEditing = false;
         }
-        getNotificationCount();
         multiplayerPanel.SetActive(false);
         notificationsPanel.SetActive(false);
         barreMenu.montrerPrincipal();
