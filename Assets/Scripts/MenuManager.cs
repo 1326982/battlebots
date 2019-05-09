@@ -28,8 +28,10 @@ public class MenuManager : MonoBehaviour {
     [SerializeField] private PoubelleUI trashUI;
     [SerializeField] private GameObject multiplayerPanel;
     [SerializeField] private GameObject notificationsPanel;
-    [SerializeField] private Text notificationCountText;
-    [SerializeField] private GameObject notificationPastille;
+    [SerializeField] private GameObject botSettingsPanel;
+    [SerializeField] private Dropdown dropdownBots;
+    [SerializeField] private InputField changeNameInput;
+    [SerializeField] private Toggle togglePreffered;
 
     private Bot showedBot;
 
@@ -65,6 +67,7 @@ public class MenuManager : MonoBehaviour {
         panelinfo.textXp.text = info.userXp + "/" + info.userNextLvlXp;
         float xp = (float)info.userXp/(float)info.userNextLvlXp;
         panelinfo.sliderXp.value = xp;
+        populateBotsDropDown();
         botContainer = new GameObject();
         spawnEditBot();
     }
@@ -77,6 +80,18 @@ public class MenuManager : MonoBehaviour {
                 editingHandler();
             }
         }
+    }
+
+    public void populateBotsDropDown(){
+        BotBuilder[] botlist  = GameManager.instance.LoadedBots;
+        dropdownBots.ClearOptions();
+        List<string> nameList = new List<string>{};
+        foreach(BotBuilder bot in botlist){
+            string isprimary = (bot.botsPrefered == "true")?"(Primary fighter)":"";
+            nameList.Add(bot.botsName+" "+ isprimary);
+        }
+        dropdownBots.AddOptions(nameList);
+        dropdownBots.value = GameManager.instance.SelectedBotIndex;
     }
 
     private void editingHandler() {
@@ -308,6 +323,10 @@ public class MenuManager : MonoBehaviour {
         spawnEditBot();
     }
 
+    public void saveBotSettings(){
+
+    }
+
     public void callchangeBase() {
         GameObject modal = Instantiate(modalBox,new Vector3(0, 0, 0), Quaternion.identity);
         modal.transform.SetParent (GameObject.FindGameObjectWithTag("Canvas").transform, false);
@@ -323,19 +342,6 @@ public class MenuManager : MonoBehaviour {
         hasChangedSinceLastSave = true;
     }
 
-    // public void getNotificationCount(){
-    //     string query= "&action=getNotificationsCount&usersID="+PlayerPrefs.GetString("usersID");
-    //     StartCoroutine(DatabaseManager.instance.Query(showNotificationCount,query));
-    // }
-    // public void showNotificationCount(string count){
-    //     if(count == "0"){
-    //         notificationPastille.SetActive(false);
-    //     }else{
-    //         notificationCountText.text = count;
-    //         notificationPastille.SetActive(true);
-    //     }
-        
-    // }
 
     public void callplacerItem() {
         blockItemClick = false;        
@@ -372,6 +378,7 @@ public class MenuManager : MonoBehaviour {
         }
         multiplayerPanel.SetActive(false);
         notificationsPanel.SetActive(false);
+        botSettingsPanel.SetActive(false);
         barreMenu.montrerPrincipal();
     }
     public void callsubCustomize(){
@@ -387,12 +394,33 @@ public class MenuManager : MonoBehaviour {
     public void callshowNotifications(){
         notificationsPanel.SetActive(true);
     }
+    public void callshowBotSettings(){
+        botSettingsPanel.SetActive(true);
+        changeNameInput.text = GameManager.instance.GetActiveBot.botsName;
+        togglePreffered.isOn = false;
+    }
 
     public void savebotbutton(){
         GameObject modal = Instantiate(modalBox,new Vector3(0, 0, 0), Quaternion.identity);
         modal.transform.SetParent (GameObject.FindGameObjectWithTag("Canvas").transform, false);
         modal.GetComponent<Modal>().init("Save Bot before exiting edit mode?",saveModalCallback,"Yes","No",spawnbotEdit);
     }
+
+    public void saveBotSettingsButton(){
+        string botsID = GameManager.instance.GetActiveBot.botID;
+        string newName = changeNameInput.text;
+        string action = "saveBotSettings";
+        string usersID= PlayerPrefs.GetString("usersID");
+        string willPrefer = (togglePreffered.isOn)?"true":GameManager.instance.GetActiveBot.botsPrefered;
+        string query = "&action="+action+"&newName="+newName+"&usersID="+usersID+"&botsID="+botsID+"&willPrefer="+willPrefer;
+        StartCoroutine(DatabaseManager.instance.Query(saveBotSettingsCallback , query));
+    }
+    public void saveBotSettingsCallback(string response){
+        StartCoroutine(DatabaseManager.instance.loadBotsEdit());
+        populateBotsDropDown();
+        callprincipal();
+    }
+
     public void  saveModalCallback() {
         saveBot(showedBot.saveBotPieces());
     }

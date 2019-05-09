@@ -32,7 +32,7 @@ public class DatabaseManager : MonoBehaviour {
     public IEnumerator Query(Action<string> sucessFunction ,string query) {
         WWW www = new WWW(url+query);
         yield return www;
-        print(www.text);
+        Debug.Log(www.text);
         sucessFunction(www.text);
         yield return null;
 
@@ -99,6 +99,7 @@ public class DatabaseManager : MonoBehaviour {
         HttpBotsWrapper bots = JsonUtility.FromJson<HttpBotsWrapper>(response);
         GameManager.instance.LoadedBots = buildBotArray(false, bots);
         MenuManager.instance.spawnbotEdit();
+        MenuManager.instance.populateBotsDropDown();
     }
 
     private BotBuilder[] buildBotArray(bool replaceSelected, HttpBotsWrapper bots){
@@ -109,6 +110,8 @@ public class DatabaseManager : MonoBehaviour {
             BotBuilder botAct = botArrayTmp[id];
             botAct.platform = botInfo.botsPlatform;
             botAct.botID = botInfo.botsId;
+            botAct.botsPrefered = botInfo.botsPrefered;
+            botAct.botsName = botInfo.botsName;
             botAct.rotationSpeed = float.Parse(botInfo.botsRotationSpeed);
             botAct.speed = float.Parse(botInfo.botsSpeed);
             botAct.weight = float.Parse(botInfo.botsWeight);

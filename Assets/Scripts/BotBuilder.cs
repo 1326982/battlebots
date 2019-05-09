@@ -17,11 +17,13 @@ using UnityEngine;
 [System.Serializable]
 public class BotBuilder {
     public string botID;
+    public string botsName;
     public string platform;
     public AnchorInfo[] listParts;
     public float rotationSpeed;
     public float speed;
     public float weight;
+    public string botsPrefered;
 
 
     

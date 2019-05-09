@@ -125,7 +125,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nomItem: 
-  jointType: 
   linkedAnchor: {fileID: 0}
 --- !u!114 &2770555174637358734
 MonoBehaviour:

@@ -30,7 +30,6 @@ public class BotEntityBuilder : MonoBehaviour {
         } else if(botName == "visitor"){
             BattleManager.instance.SetVisitorBot = botComponent;
         }
-        
         Destroy(gameObject);
     }
 

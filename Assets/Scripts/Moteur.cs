@@ -22,7 +22,7 @@ public class Moteur : MonoBehaviour {
             velocite-= acceleration;
             if(velocite <0){velocite=0;};
         }
-        if(transform.position.y < 1.5f) {
+        if(transform.position.y < 0.7f) {
             _rbodyParent.AddForce(new Vector3(transform.parent.transform.forward.x,0.2f,transform.parent.transform.forward.z)*velocite);
         }
     }

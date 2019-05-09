@@ -145,6 +145,7 @@ public class GameManager : MonoBehaviour {
         BotBuilder botAct = new BotBuilder();
         botAct.platform = botInfo.botsPlatform;
         botAct.botID = botInfo.botsId;
+        botAct.botsName = botInfo.botsName;
         botAct.rotationSpeed = float.Parse(botInfo.botsRotationSpeed);
         botAct.speed = float.Parse(botInfo.botsSpeed);
         botAct.weight = float.Parse(botInfo.botsWeight);

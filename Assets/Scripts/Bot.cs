@@ -16,8 +16,8 @@ using System;
 
 [Serializable]
 public class Bot : MonoBehaviour {
-    private GameObject impactParticle;
-    private string baseName;
+    private GameObject _impactParticle;
+    private string _baseName;
     public bool isEdited = false;
     private Rigidbody _rbody;
     private GameObject _cible;
@@ -25,11 +25,11 @@ public class Bot : MonoBehaviour {
     private GameObject _opponent;
     public GameObject linkedAnchor;
     private int botID;
-    private GameObject editingParent;
-    private Destroyable coreDest;
+    private GameObject _editingParent;
+    private Destroyable _coreDest;
+    private GameObject _core;
 
     private float _totalHP;
-    private float _HPactuel;
     private List<Destroyable> _tDestroyable = new List<Destroyable>{};
 
     private float tempsStagne = 0; // accumule le temps en fram que le gameobject n'a pas bougé
@@ -41,62 +41,81 @@ public class Bot : MonoBehaviour {
     private int frameEnversMax = 300;
     private int frameEnversAct = 0;
 
-    private Anchors ancres;
+    private BotState _state = BotState.Created;
 
-    private bool actif = false;
+    private Anchors _ancres;
+
+    private causeOfDeath _causedeath;
+
+    private bool _actif = false;
     /* LOCOMOTION */
-    List<Moteur> rouesmoteur = new List<Moteur>{};
+    private List<Moteur> _rouesmoteur = new List<Moteur>{};
 
 
 
     private void Start() {
-        impactParticle = Resources.Load("sparkParticle") as GameObject;
+        _impactParticle = Resources.Load("sparkParticle") as GameObject;
     }
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
     void FixedUpdate() {
-        if(actif){
+        if(_actif){
             Debug.DrawLine(transform.position,_cible.transform.position,Color.red,0.1f);
             foncerSur(_cible.transform.position);
             antiStagnation();
-            if((getHp()*100)/_totalHP <40 ) {
-                BattleManager.instance.DeclareDeath(gameObject.name);
-                deactivate();
-            }
-            if(coreDest == null) {
-                BattleManager.instance.DeclareDeath(gameObject.name);
-                deactivate();
-            }
-            if(verifierEnvers()) {
-                BattleManager.instance.DeclareDeath(gameObject.name);
-                deactivate();
-            }
+            checkState();
         }    
         
     }
 
+    public void checkState(){
+        if(percentHP() <=0 ) {
+                _causedeath = causeOfDeath.Totaled;
+                BattleManager.instance.DeclareDeath(gameObject.name);
+                deactivate();
+        }else if(_coreDest == null) {
+                _causedeath = causeOfDeath.CoreDestroyed;
+                BattleManager.instance.DeclareDeath(gameObject.name);
+                CamSelect cam = (gameObject.name == "visitor")?CamSelect.CoreVisitor:CamSelect.CoreLocal;
+                BattleManager.instance.switchCam(cam);
+                deactivate();
+        }else if(verifierEnvers()) {
+                _causedeath = causeOfDeath.UpsideDown;
+                BattleManager.instance.DeclareDeath(gameObject.name);
+                deactivate();
+        }
+    }
+
+    public float percentHP(){
+        float totalCheckedHP = _totalHP - ((_totalHP/100)*25);
+        float diff = _totalHP - totalCheckedHP;
+        float hpActPercent = Mathf.Clamp(((getHp()-diff)*100)/totalCheckedHP,0f,100f);
+        return hpActPercent;
+    }
+
 
     public void Build(BotBuilder instructions){
-        coreDest = transform.Find("core").GetComponent<Destroyable>();
-        baseName = instructions.platform;
-        ancres = GetComponent<Anchors>(); 
+        _state = BotState.Building;
+        _core = transform.Find("core").gameObject;
+        _coreDest = _core.GetComponent<Destroyable>();
+        _baseName = instructions.platform;
+        _ancres = GetComponent<Anchors>(); 
         _rbody = GetComponent<Rigidbody>();
         _rotationSpeed = instructions.rotationSpeed;
         _speed = instructions.speed;
         getDestroyables(gameObject);
-        connectParts(instructions.listParts, ancres.anchorsList );
+        connectParts(instructions.listParts, _ancres.anchorsList );
         _totalHP = getHp();
         if(isEdited) {
-            //editingParent = MenuManager.instance.botContainer;
             transform.parent= MenuManager.instance.botContainer.transform;
             MenuManager.instance.ShowCasedBot = this;
              _rbody.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ ;//| RigidbodyConstraints.FreezePositionY;
              _rbody.freezeRotation = true;
              Destroy(_rbody);
         }
-
+        _state=BotState.Ready;
     }
     string testjson(AnchorInfo[] list) {
         string listeTmp ="[";
@@ -133,7 +152,7 @@ public class Bot : MonoBehaviour {
             if(itemTmp.tag == "wheel"){
                 goPosition[info.anchorPos].GetComponent<AnchorPlace>().infos = info;
                 getDestroyables(itemTmp);
-                rouesmoteur.Add(itemTmp.GetComponent<Moteur>());
+                _rouesmoteur.Add(itemTmp.GetComponent<Moteur>());
                 itemTmp.transform.parent= gameObject.transform;
                 if(!isEdited){
                     itemTmp.GetComponent<Moteur>().activate();
@@ -172,27 +191,27 @@ public class Bot : MonoBehaviour {
     }
 
     public void activate() {
-        if(!actif) {
+        if(!_actif) {
             findOpponent();
             _cible = _opponent;
             createNavMesh();
-            actif = true;
-            foreach(Moteur roue in rouesmoteur) {
+            _actif = true;
+            foreach(Moteur roue in _rouesmoteur) {
                 roue.SetVitesse = 5;
             }
         }
     }
 
     public void deactivate(){
-        actif = false;
-        foreach(Moteur roue in rouesmoteur) {
+        _actif = false;
+        foreach(Moteur roue in _rouesmoteur) {
             roue.SetVitesse = 0;
         }
     }
 
     public string[] saveBotPieces() {
         List<AnchorPlace> temp = new List<AnchorPlace>(){};
-        foreach(GameObject ancre in  ancres.anchorsList) {
+        foreach(GameObject ancre in  _ancres.anchorsList) {
             AnchorPlace anchorPlaceAct = ancre.GetComponent<AnchorPlace>();
             if(anchorPlaceAct.isOccupied){
                 temp.Add(anchorPlaceAct);
@@ -207,7 +226,7 @@ public class Bot : MonoBehaviour {
             jsonPieces += (i!=listJsonPieces.Count-1)?",":"";
         }
         jsonPieces += "]";
-        return new string [2] {jsonPieces , baseName};
+        return new string [2] {jsonPieces , _baseName};
     }
     
     /*------------------------------------------------------------ */
@@ -224,7 +243,6 @@ public class Bot : MonoBehaviour {
     void findOpponent() {
         if(gameObject.name == "local") {
             _opponent = GameObject.Find("visitor");
-            cameraMover.cam.setCible(gameObject.transform);
         }else {
             _opponent = GameObject.Find("local");
         }
@@ -329,12 +347,12 @@ public class Bot : MonoBehaviour {
                 // m.targetVelocity = 1000 * _speed;
             }
             if(Mathf.Abs(angle)<90) {
-                foreach(Moteur roue in rouesmoteur) {
+                foreach(Moteur roue in _rouesmoteur) {
                   roue.SetVitesse = 3.5f;
                 }
             }
         }else {
-            foreach(Moteur roue in rouesmoteur) {
+            foreach(Moteur roue in _rouesmoteur) {
                   roue.SetVitesse = 0;
                 }
         }
@@ -348,7 +366,7 @@ public class Bot : MonoBehaviour {
         if(autreCollider.gameObject.tag == "weaponCollider") {
             Destroyable _destroyableTemp= other.contacts[0].thisCollider.gameObject.GetComponent<Destroyable>();
             if(_destroyableTemp != null) {
-                Instantiate(impactParticle,other.contacts[0].point,transform.rotation);
+                Instantiate(_impactParticle,other.contacts[0].point,transform.rotation);
                 Weapon compWeapon = autreCollider.GetComponent<Weapon>();
                 int probabiliteKnockBack = Mathf.RoundToInt(UnityEngine.Random.Range(0,100));
                 if(probabiliteKnockBack < 10) {
@@ -377,14 +395,18 @@ public class Bot : MonoBehaviour {
         set{_cible = value;}
     }
 
-    public float getHpActuel(){
-        float temp = 0;
-        foreach(Destroyable dest in _tDestroyable) {
-            if(dest != null) {
-                temp += dest.HP;
-            }
-        }
-        return temp;
+    public causeOfDeath DeathCause{
+        get{return _causedeath;}
+        set{_causedeath = value;}
+    }
+
+    public GameObject CoreGO {
+        get{return _core;}
+    }
+
+    public BotState State {
+        get{return _state;}
+        set{_state = value;}
     }
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
@@ -394,6 +416,9 @@ public class Bot : MonoBehaviour {
         get{return _totalHP;}
     }
 
+}
+public enum causeOfDeath {
+    CoreDestroyed,Totaled,UpsideDown,Damage
 }
 
 
