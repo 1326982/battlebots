@@ -59,7 +59,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d1ae391be6e2c4d42b3faf41dc848439, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -170,7 +170,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d1ae391be6e2c4d42b3faf41dc848439, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -281,7 +281,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 92c045df02940eb40872e727f261f95d, type: 2}
+  - {fileID: 2100000, guid: b12ca7f3830ea8c48bf3c6652177f594, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -417,7 +417,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d1ae391be6e2c4d42b3faf41dc848439, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -517,7 +517,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nomItem: 
-  jointType: 
   linkedAnchor: {fileID: 0}
 --- !u!65 &3113754056845163440
 BoxCollider:
@@ -591,7 +590,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: d1ae391be6e2c4d42b3faf41dc848439, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

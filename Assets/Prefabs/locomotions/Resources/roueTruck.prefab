@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3371838983981907207}
   - component: {fileID: 4783853247460122954}
   - component: {fileID: 2770555174637358734}
+  - component: {fileID: 7123886133902595391}
   m_Layer: 0
   m_Name: roueTruck
   m_TagString: wheel
@@ -61,8 +62,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 47b3be62f34ce0b489f86c1c02aaebef, type: 3}
-  - {fileID: 2100002, guid: 47b3be62f34ce0b489f86c1c02aaebef, type: 3}
+  - {fileID: 2100000, guid: 49e30dac5cd7f7243bd6f7af82f0746d, type: 2}
+  - {fileID: 2100000, guid: d1ae391be6e2c4d42b3faf41dc848439, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -138,3 +139,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85ed95e950166764e8891075e86ab194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  layer:
+    serializedVersion: 2
+    m_Bits: 512
+--- !u!114 &7123886133902595391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3007524302310129234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07072600fe0290d428932e843a450752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _speed: 3.5
+  _rotation: 6

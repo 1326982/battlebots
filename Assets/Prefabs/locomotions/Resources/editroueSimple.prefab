@@ -92,6 +92,7 @@ GameObject:
   - component: {fileID: 3901128419181857896}
   - component: {fileID: 4925292693660522252}
   - component: {fileID: 8691137329322572058}
+  - component: {fileID: 4098801227434285717}
   m_Layer: 0
   m_Name: editroueSimple
   m_TagString: wheel
@@ -131,7 +132,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 92c045df02940eb40872e727f261f95d, type: 2}
+  - {fileID: 2100000, guid: b12ca7f3830ea8c48bf3c6652177f594, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -202,7 +203,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nomItem: 
-  jointType: 
   linkedAnchor: {fileID: 0}
 --- !u!114 &8691137329322572058
 MonoBehaviour:
@@ -216,3 +216,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85ed95e950166764e8891075e86ab194, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  layer:
+    serializedVersion: 2
+    m_Bits: 512
+--- !u!114 &4098801227434285717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5618464713912023132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07072600fe0290d428932e843a450752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _speed: 4
+  _rotation: 2

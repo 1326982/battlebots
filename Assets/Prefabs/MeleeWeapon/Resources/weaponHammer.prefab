@@ -77,7 +77,7 @@ GameObject:
   - component: {fileID: 4265628430635086864}
   m_Layer: 0
   m_Name: Cylinder001
-  m_TagString: weaponCollider
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 914e9f7c65542db4591cfe4713a8522e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _valDommage: 25
+  _valDommage: 15
   _valKnockBack: 8
 --- !u!64 &4265628430635086864
 MeshCollider:
@@ -296,6 +296,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c85b3748a5e65f34080f6bdae576d179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hammerHead: {fileID: 337809669313978482}
 --- !u!64 &1356536831798234024
 MeshCollider:
   m_ObjectHideFlags: 0
