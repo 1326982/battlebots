@@ -7,7 +7,7 @@ public class Moteur : MonoBehaviour {
     private float vitesse;
     private Rigidbody _rbodyParent;
     private float velocite = 0;
-    private float acceleration = 0.1f;
+    private float acceleration = 1f;
     private float minDist;
     private float toleranceDist = 0.02f;
     [SerializeField] LayerMask layer;
@@ -23,10 +23,10 @@ public class Moteur : MonoBehaviour {
     // Update is called once per frame
     void Update() {
          Debug.DrawLine(transform.position,new Vector3(transform.position.x,transform.position.y-minDist,transform.position.z),Color.green,0.1f);
-         RaycastHit hit;
-        bool testdist = Physics.Linecast(transform.position, new Vector3(transform.position.x,transform.position.y-minDist,transform.position.z),out hit,layer);
+         //RaycastHit hit;
+        bool testdist = Physics.Linecast(transform.position, new Vector3(transform.position.x,transform.position.y-minDist,transform.position.z)/* ,out hit*/,layer);
 
-        if(testdist){Debug.Log(hit.transform.gameObject.name);};
+        //if(testdist){Debug.Log(hit.transform.gameObject.name);};
         if(activated) {
             transform.Rotate(0,_rbodyParent.velocity.magnitude,0);
             if(velocite<vitesse && testdist){
@@ -35,6 +35,9 @@ public class Moteur : MonoBehaviour {
                 velocite-= acceleration*2;
                 if(velocite <0){velocite=0;};
             }
+            // if(vitesse == 0 && velocite>1){
+            //     velocite=-2;
+            // }
             if(testdist) {
                 _rbodyParent.AddForce(new Vector3(transform.parent.transform.forward.x,0.2f,transform.parent.transform.forward.z)*velocite);
             }

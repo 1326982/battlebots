@@ -17,6 +17,7 @@ using UnityEngine;
 [System.Serializable]
 public class BotBuilder {
     public string botID;
+    public string ownerID;
     public string botsName;
     public string platform;
     public AnchorInfo[] listParts;

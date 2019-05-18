@@ -18,4 +18,5 @@ public class HttpUserInfo {
     public int userLvl;
     public int cash;
     public int userClassement;
+    public string username;
 }

@@ -9,11 +9,15 @@ public class UIFader : MonoBehaviour {
     void Start() {
         _element = GetComponent<CanvasGroup>();
     }
-    public void fade(FadeTransition fadeType,float seconds = 0.5f){
-        if(_isFading){ StopAllCoroutines();}
+    public void Fade(FadeTransition fadeType,float seconds = 0.5f){
+        if(!_element){
+            _element = GetComponent<CanvasGroup>();
+        }
+        if(_isFading){ StopAllCoroutines();_isFading = false;}
         StartCoroutine(doFade(fadeType,seconds));
     }
     private IEnumerator doFade(FadeTransition fadeType,float seconds = 0.5f){
+        _isFading = true;
         float currentAlpha = _element.alpha;
         float dir = (fadeType== FadeTransition.In)?1:-1;
         float targetAlpha = (fadeType == FadeTransition.In)?1f:0f;
@@ -26,6 +30,7 @@ public class UIFader : MonoBehaviour {
             timeRemeaning-= Time.deltaTime;
             yield return 0;
         }
+        _isFading = false;
         yield return null;
     }
 }

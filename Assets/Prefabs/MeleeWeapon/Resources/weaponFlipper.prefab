@@ -178,7 +178,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _valDommage: 0.01
-  _valKnockBack: 20
+  _valKnockBack: 6
 --- !u!1 &8180178475303303034
 GameObject:
   m_ObjectHideFlags: 0

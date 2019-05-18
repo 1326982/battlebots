@@ -28,15 +28,32 @@ public class LoginManager : MonoBehaviour {
     [SerializeField] private InputField usernameLogin;
     [SerializeField] private InputField passwordLogin;
 
+    [SerializeField] private UIFader content;
+    [SerializeField] private UIFader loginFade;
+    [SerializeField] private UIFader signUpFade;
+
+
+    void Start() {
+        content.Fade(FadeTransition.In);
+    }
+
     public void toLogin() {
-        signUpBox.SetActive(false);
-        loginBox.SetActive(true);
+        loginFade.Fade(FadeTransition.In);
+        loginFade.GetComponent<CanvasGroup>().interactable = true;
+        loginFade.GetComponent<CanvasGroup>().blocksRaycasts = true;
+        signUpFade.Fade(FadeTransition.Out);
+        signUpFade.GetComponent<CanvasGroup>().interactable = false;
+        signUpFade.GetComponent<CanvasGroup>().blocksRaycasts = false;
 
     }
 
     public void toSignUp() {
-        signUpBox.SetActive(true);
-        loginBox.SetActive(false);
+        loginFade.Fade(FadeTransition.Out);
+        loginFade.GetComponent<CanvasGroup>().interactable = false;
+        loginFade.GetComponent<CanvasGroup>().blocksRaycasts = false;
+        signUpFade.Fade(FadeTransition.In);
+        signUpFade.GetComponent<CanvasGroup>().interactable = true;
+        signUpFade.GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 
     public void signUp(){
@@ -104,10 +121,17 @@ public class LoginManager : MonoBehaviour {
             PlayerPrefs.SetString("usersID",token.usersID);
             PlayerPrefs.SetString("username",token.username);
             GameManager.instance.UserUsername = token.username;
-            GameManager.instance.changeScene(Scenes.Auth);
+            StartCoroutine("toAuth");
         }else {
             errorTxt.text = token.error;
         }
+    }
+
+    private IEnumerator toAuth(){
+        content.Fade(FadeTransition.Out);
+        yield return new WaitForSeconds(0.6f);
+        GameManager.instance.changeScene(Scenes.Auth);
+        yield return null;
     }
 
     

@@ -38,15 +38,22 @@ public class Bot : MonoBehaviour {
     private float _rotationSpeed = 0;
     private float _speed = 0;
 
-    private int frameEnversMax = 300;
-    private int frameEnversAct = 0;
+    private float frameEnversMax = 5f;//secondes
+    private float frameEnversAct = 0;
+    private bool isUpsideDown = false;
 
     private BotState _state = BotState.Created;
 
     private Anchors _ancres;
     private float _editorSpeed;
 
+    private int slowDownSounds = 0;
+
     private causeOfDeath _causedeath;
+
+    private AudioSource _audioSource;
+    private AudioClip impactKB;
+    private AudioClip smallHit;
 
     private bool _actif = false;
     /* LOCOMOTION */
@@ -56,11 +63,18 @@ public class Bot : MonoBehaviour {
 
     private void Start() {
         _impactParticle = Resources.Load("sparkParticle") as GameObject;
+        _audioSource = GetComponent<AudioSource>();
+        loadSounds();
     }
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
     /*------------------------------------------------------------ */
+    private void loadSounds(){
+        impactKB = Resources.Load<AudioClip>("coupMetal");
+        smallHit = Resources.Load<AudioClip>("smallHit");
+    }
+
     void FixedUpdate() {
         if(_actif){
             Debug.DrawLine(transform.position,_cible.transform.position,Color.red,0.1f);
@@ -146,7 +160,9 @@ public class Bot : MonoBehaviour {
                 getDestroyables(itemTmp);
                 _rouesmoteur.Add(itemTmp.GetComponent<Moteur>());
                 itemTmp.transform.parent= gameObject.transform;
+                if(isEdited){MenuManager.instance.addPieceCount(PieceType.Locomotion);}
                 if(!isEdited ){
+                    
                     tempSpeed += itemTmp.GetComponent<WheelStats>()._speed;
                     Debug.Log(itemTmp.GetComponent<WheelStats>()._speed);
                     nbRoues++;
@@ -155,10 +171,12 @@ public class Bot : MonoBehaviour {
 
         
             }else if(itemTmp.tag == "mWeapon"){
+                if(isEdited){MenuManager.instance.addPieceCount(PieceType.Attack);}
                 goPosition[info.anchorPos].GetComponent<AnchorPlace>().infos = info;
                 getDestroyables(itemTmp);
                 itemTmp.transform.parent= gameObject.transform;
             }else if(itemTmp.tag == "Defense"){
+                if(isEdited){MenuManager.instance.addPieceCount(PieceType.Defense);}
                 goPosition[info.anchorPos].GetComponent<AnchorPlace>().infos = info;
                 getDestroyables(itemTmp);
                 itemTmp.transform.parent= gameObject.transform;
@@ -275,7 +293,7 @@ public class Bot : MonoBehaviour {
             }else {
                 tempsStagne = 0;
             }
-            if(tempsStagne >= 120) {
+            if(tempsStagne >= 240) {
                 tempsStagne = 0;
                 StartCoroutine("contourner");
                 StartCoroutine("rotationBoost");
@@ -285,13 +303,36 @@ public class Bot : MonoBehaviour {
     }
 
     private bool verifierEnvers(){
-        if(transform.up.y < 0.7f){
-            frameEnversAct++;
+        if(isUpsideDown){
+            if(transform.up.y < 0.7f){
+                frameEnversAct-= Time.deltaTime;
+                BattleManager.instance.CountdownValue = frameEnversAct.ToString();
+                if(frameEnversAct < 0){
+                    return true;
+                }
+            }else {
+                isUpsideDown=false;
+                BattleManager.instance.BotIsFlipped =false;
+                BattleManager.instance.PanelFlip.GetComponent<UIFader>().Fade(FadeTransition.Out);
+            }
         }else {
-            frameEnversAct = 0;
-        }
-        if(frameEnversAct >= frameEnversMax){
-            return true;
+            if(transform.up.y < 0.7f){
+                if(!BattleManager.instance.BotIsFlipped){
+                    BattleManager.instance.BotIsFlipped = true;
+                    string text = "";
+                    if(gameObject.name == "local") {
+                    text = "Your bot is flipped!";
+                    }else {
+                    text = "Opponent's bot is flipped!";
+                    }
+                    BattleManager.instance.CountdownName = text;
+                    BattleManager.instance.PanelFlip.GetComponent<UIFader>().Fade(FadeTransition.In);
+                    BattleManager.instance.CountdownName = text;
+                    frameEnversAct = 5f;
+                    isUpsideDown = true;
+                }
+                return false;
+            }
         }
         return false;
 
@@ -315,7 +356,7 @@ public class Bot : MonoBehaviour {
         float memoireSpeed = _speed;
         float memoireRotSpeed = _rotationSpeed;
         _rotationSpeed = memoireRotSpeed*100f;
-        _speed = memoireSpeed*3;
+        _speed = memoireSpeed*1.5f;
         yield return new WaitForSeconds(1f);
         _rotationSpeed = memoireRotSpeed;
         _speed = memoireSpeed;
@@ -328,7 +369,7 @@ public class Bot : MonoBehaviour {
     void foncerSur(Vector3 cible) {
         Vector3 targetDir = cible - transform.position;
         float angle = Vector3.SignedAngle(transform.forward, targetDir, Vector3.up );
-        float precision = UnityEngine.Random.Range(14f,20f);
+        float precision = UnityEngine.Random.Range(10f,25f);
         if(transform.up.y > 0.8f){
             if(angle > precision) {
                 _rbody.AddTorque(transform.up*(_rotationSpeed/1000) * 1, ForceMode.Impulse);
@@ -354,6 +395,12 @@ public class Bot : MonoBehaviour {
         
     }
 
+    private void playVariatedSound(AudioClip clip,float volume = 1){
+        float pitch = UnityEngine.Random.Range(0.4f,0.45f);
+        _audioSource.pitch = pitch;
+        _audioSource.PlayOneShot(clip,volume);
+    }
+
     private void OnCollisionStay(Collision other) {
         //Debug.Log("From "+gameObject.name+" ->Collider: "+ other.contacts[0].thisCollider.name + "collided with " + other.contacts[0].otherCollider);
         GameObject colliderEnfant = other.contacts[0].thisCollider.gameObject;
@@ -364,16 +411,22 @@ public class Bot : MonoBehaviour {
                 Instantiate(_impactParticle,other.contacts[0].point,transform.rotation);
                 Weapon compWeapon = autreCollider.GetComponent<Weapon>();
                 int probabiliteKnockBack = Mathf.RoundToInt(UnityEngine.Random.Range(0,100));
-                if(probabiliteKnockBack < 10) {
+                if(probabiliteKnockBack < 4) {
                     Vector3 direction = calculDirectionKnockback(other.contacts[0].point , transform.position);
-                     foreach(Moteur roue in _rouesmoteur) {
+                    foreach(Moteur roue in _rouesmoteur) {
                         roue.SetVitesse = 0;
                     }
+                    playVariatedSound(impactKB);
                     _rbody.AddForce(direction*compWeapon.KnockBack, ForceMode.Impulse);
                 }
+
+                playVariatedSound(smallHit, compWeapon.ValDommage/10 );
                 _destroyableTemp.endommager(compWeapon.ValDommage );
                 
             }
+        }else if(autreCollider.gameObject.tag == "walls"){
+            Vector3 direction = calculDirectionKnockback(other.contacts[0].point , transform.position);
+            _rbody.AddForce(direction*3, ForceMode.Impulse);
         }
         
 

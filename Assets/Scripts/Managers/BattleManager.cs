@@ -30,6 +30,7 @@ public class BattleManager : MonoBehaviour {
     private float battleClock = 90 ;
     private string winner = "";
     private bool quickEnd = false;
+    private bool abandoned = false;
 
 
     // CINEMACHINE
@@ -37,29 +38,39 @@ public class BattleManager : MonoBehaviour {
     [SerializeField] CinemachineVirtualCamera vcam2;// pour les close up ...
     [SerializeField] CinemachineVirtualCamera vcam3Visitor;// pour la pres ...
     [SerializeField] CinemachineVirtualCamera vcam3local;// pour la pres ...
-    [SerializeField] CinemachineDollyCart vcam3Cartvisitor;
-    [SerializeField] CinemachineDollyCart vcam3Cartlocal;
     [SerializeField] CinemachineVirtualCamera vcamCoreLocal;
     [SerializeField] CinemachineVirtualCamera vcamCoreVisitor;
 
-    [SerializeField] private Text visitorHealthText;
-    [SerializeField] private Text visitorBotNameText;
-    [SerializeField] private Text localHealthText;
-    [SerializeField] private Text localBotNameText;
-    [SerializeField] private Slider localHealthSlider;
-    [SerializeField] private Slider visitorHealthSlider;
+    [SerializeField] private Text _visitorHealthText;
+    [SerializeField] private Text _visitorBotNameText;
+    [SerializeField] private Text _localHealthText;
+    [SerializeField] private Text _localBotNameText;
+    [SerializeField] private Slider _localHealthSlider;
+    [SerializeField] private Slider _visitorHealthSlider;
 
     [SerializeField] private GameObject _panneauUIBattle;
-    [SerializeField] private Text clock;
+    [SerializeField] private GameObject _panneauFlipCountdown;
+    [SerializeField] private Text _clock;
+    [SerializeField] private Text _textCountown;
+    [SerializeField] private Text _textFlip;
+    private bool _botIsFlipped = false;
 
     [SerializeField] private PanneauFin panneauFin;
 
     [SerializeField] private Text countdownText;
     [SerializeField] private GameObject presentationPanel;
     [SerializeField] private Text presentationPanelText;
+    [SerializeField] private Text presentationPanelTextUsername;
 
     //phrase de fin 
     private Dictionary<string,Dictionary<causeOfDeath,string>> phrasesFin = new Dictionary<string, Dictionary<causeOfDeath, string>>();
+
+    [SerializeField] private GameObject _xpPanel;
+    [SerializeField] private GameObject _rankPanel;
+    [SerializeField] private Text _txtRanking;
+    [SerializeField] private Slider _sliderXp;
+    [SerializeField] private GameObject _lvlupFader;
+    [SerializeField] private Text _txtSliderXp;
 
     void Awake(){
         if(instance == null) {
@@ -97,6 +108,8 @@ public class BattleManager : MonoBehaviour {
         vcam2.LookAt = localBot.gameObject.transform;
         vcam3Visitor.LookAt = visitorBot.gameObject.transform;
         vcam3local.LookAt = localBot.gameObject.transform;
+        vcam3Visitor.Follow = visitorBot.gameObject.transform;
+        vcam3local.Follow = localBot.gameObject.transform;
         vcamCoreLocal.LookAt = localBot.CoreGO.gameObject.transform;
         vcamCoreLocal.Follow = localBot.CoreGO.gameObject.transform;
         vcamCoreVisitor.LookAt = visitorBot.CoreGO.gameObject.transform;
@@ -123,55 +136,80 @@ public class BattleManager : MonoBehaviour {
             yield return new WaitForSeconds(0.1f);
         }
         assignCams();
-        switchCam(CamSelect.VisitorPresentation);
         yield return StartCoroutine("presentation");
 
-        countdownText.GetComponent<UIFader>().fade(FadeTransition.In,0.3f);
+        countdownText.GetComponent<UIFader>().Fade(FadeTransition.In,0.3f);
         yield return new WaitForSeconds(1f);
         countdownText.text = "2";
         yield return new WaitForSeconds(1f);
         countdownText.text = "1";
         yield return new WaitForSeconds(1f);
         countdownText.text = "Battle!";
-        countdownText.GetComponent<UIFader>().fade(FadeTransition.Out,0.6f);
+        countdownText.GetComponent<UIFader>().Fade(FadeTransition.Out,0.6f);
         switchCam(CamSelect.LocalFollowNear);
-        localBotNameText.text = localBotName;
-        visitorBotNameText.text = visitorBotName;
-        _panneauUIBattle.GetComponent<UIFader>().fade(FadeTransition.In, 0.5f);
+        _localBotNameText.text = localBotName;
+        _visitorBotNameText.text = visitorBotName;
+        _panneauUIBattle.GetComponent<UIFader>().Fade(FadeTransition.In, 0.5f);
         StartCoroutine("beginBattle");
         yield return null;
     }
 
     private IEnumerator presentation() {
-        bool[] presentActions = new bool[4]{false,false,false,false};// visitor in, visitor out, local in, local out
-        vcam3Cartlocal.m_Speed = 0.8f;
-        vcam3Cartvisitor.m_Speed = 0.8f;
+        int step = 0;
+        int stepAct =0;
+        int autoSkipFrames =0;
         Debug.Log("presentation");
-        while(vcam3Cartlocal.m_Position<8f){
-            float pos = vcam3Cartlocal.m_Position;
-            if(pos>=0 && !presentActions[0]){
-                presentationPanelText.text = visitorBotName;
-                presentationPanel.GetComponent<UIFader>().fade(FadeTransition.In,0.5f);
-                presentActions[0]=true;
-            } else if(pos >= 3 && !presentActions[1]){
-                presentationPanel.GetComponent<UIFader>().fade(FadeTransition.Out,0.5f);
-                presentActions[1]=true;
-                vcam3Cartvisitor.m_Speed = 1.5f;
-                vcam3Cartlocal.m_Speed = 1.5f;
-                switchCam(CamSelect.LocalPresentation);
-            }else if(pos >= 6 && !presentActions[2]){
-                vcam3Cartvisitor.m_Speed = 0.8f;
-                vcam3Cartlocal.m_Speed = 0.8f;
-                presentationPanelText.text = localBotName;
-                presentationPanel.GetComponent<UIFader>().fade(FadeTransition.In,0.5f);
-                presentActions[2]=true;
-            }else if(pos >= 7.5f && !presentActions[3]){
-                presentationPanel.GetComponent<UIFader>().fade(FadeTransition.Out,0.5f);
-                presentActions[3]=true;
+        while(step <5){
+            autoSkipFrames++;
+            if(Input.touchCount >0  ){
+                if(Input.GetTouch(0).phase == TouchPhase.Began){
+                    step++;
+                    autoSkipFrames = 0;
+                }  
             }
-            yield return new WaitForSeconds(0.1f);
+            if(autoSkipFrames >500){
+                step++;
+                autoSkipFrames = 0;
+            }
+            if(Input.GetMouseButtonDown(0) && Application.platform != RuntimePlatform.Android){
+                step++;
+                autoSkipFrames = 0;
+            }
+            if(step != stepAct){
+                switch(step){
+                    case 1:
+                        stepAct = step;
+                        switchCam(CamSelect.VisitorPresentation);
+                        presentationPanelTextUsername.text = battleSettings.opponentUsername + "'s ";
+                        presentationPanelText.text = visitorBotName;
+                        presentationPanel.GetComponent<UIFader>().Fade(FadeTransition.In,0.5f);
+                    break;
+                    case 2:
+                        stepAct = step;
+                        presentationPanel.GetComponent<UIFader>().Fade(FadeTransition.Out,0.5f);
+                        yield return new WaitForSeconds(0.6f);
+                        step++;
+                    break;
+                    case 3:
+                        stepAct = step;
+                        switchCam(CamSelect.LocalPresentation);
+                        presentationPanelTextUsername.text = GameManager.instance.UserInfoAct.username + "'s ";
+                        presentationPanelText.text = localBotName;
+                        presentationPanel.GetComponent<UIFader>().Fade(FadeTransition.In,0.5f);
+                    break;
+                    case 4:
+                        stepAct = step;
+                        switchCam(CamSelect.LocalFollowFar);
+                        presentationPanel.GetComponent<UIFader>().Fade(FadeTransition.Out,0.5f);
+                        yield return new WaitForSeconds(0.6f);       
+                        step++;             
+                        break;
+                }
+            }
+            yield return 0;
+
         }
-        switchCam(CamSelect.LocalFollowFar);
+        
         yield return null;
     }
 
@@ -183,27 +221,135 @@ public class BattleManager : MonoBehaviour {
         float startTime = Time.time;
         while(startTime+duration > Time.time && !quickEnd ){
             battleClock = (startTime+duration)-Time.time;
-            clock.text = float2minute(battleClock);
+            _clock.text = float2minute(battleClock);
             showHealth();
             yield return 0;
             
         }
-        _panneauUIBattle.GetComponent<UIFader>().fade(FadeTransition.Out, 0.5f);
+        _panneauUIBattle.GetComponent<UIFader>().Fade(FadeTransition.Out, 0.5f);
         localBot.deactivate();
         visitorBot.deactivate();
+
         if(winner == ""){
             yield return StartCoroutine("getWinner");
         }
 
         yield return new WaitForSeconds(3f);
+
         Bot loser = (winner == "local")?visitorBot:localBot;
         string loserName =  (winner == "local")?"visitor":"local";
-        panneauFin.titre.text = phrasesFin[loserName][loser.DeathCause];
-        panneauFin.GetComponent<UIFader>().fade(FadeTransition.In,0.5f);
+
+        GameManager.instance.SetXpPack = makeXpPack();
+
+
+        panneauFin.titre.text = (abandoned)?"You abandoned the battle":phrasesFin[loserName][loser.DeathCause];
+        panneauFin.GetComponent<UIFader>().Fade(FadeTransition.In,0.5f);
         panneauFin.GetComponent<CanvasGroup>().interactable = true;
+
+        yield return StartCoroutine("xpAnimation");
+
+        if(battleSettings.battletype == BattleType.OnlineQuick){
+            yield return StartCoroutine("rankAnimation");
+        }
 
         yield return null;
     }
+
+
+    private XpPack makeXpPack(){
+        XpPack tmpPack = new XpPack();
+        int currentXp = GameManager.instance.UserInfoAct.userXp;
+        int nextXp = GameManager.instance.UserInfoAct.userNextLvlXp;
+        int xpWon = calculateXp();
+        if(currentXp+xpWon<nextXp){
+            tmpPack.lvl = GameManager.instance.UserInfoAct.userLvl;
+            tmpPack.xp = currentXp+xpWon;
+            tmpPack.xpNext = nextXp;
+        }else {
+            tmpPack.xp = (currentXp+xpWon)-nextXp;
+            tmpPack.lvl = GameManager.instance.UserInfoAct.userLvl+1;
+            tmpPack.xpNext = GameManager.instance.calculateNextXp(tmpPack.lvl); 
+        }
+
+
+        return tmpPack;
+    }
+
+    public void abandon(){
+        abandoned = true;
+        DeclareDeath("local");
+    }
+
+    private IEnumerator xpAnimation(){
+        int currentXp = GameManager.instance.UserInfoAct.userXp;
+        int nextXp = GameManager.instance.UserInfoAct.userNextLvlXp;
+        int xpWon = calculateXp();
+        
+        _sliderXp.maxValue = nextXp;
+        _sliderXp.minValue = 0;
+        _sliderXp.value = currentXp;
+        _txtSliderXp.text = currentXp.ToString()+"/"+nextXp.ToString();
+        yield return new WaitForSeconds(2f);
+        _xpPanel.GetComponent<UIFader>().Fade(FadeTransition.In);
+        while(xpWon !=0){
+            xpWon--;
+            _txtSliderXp.text = (++currentXp).ToString()+"/"+nextXp.ToString();
+            _sliderXp.value = currentXp;
+            if(currentXp == nextXp){
+                StartCoroutine("lvlUp");
+                GameManager.instance.UserInfoAct.userNextLvlXp = GameManager.instance.calculateNextXp(++GameManager.instance.UserInfoAct.userLvl);
+                GameManager.instance.UserInfoAct.userXp = 0;
+                currentXp=0;
+                nextXp = GameManager.instance.UserInfoAct.userNextLvlXp;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+        GameManager.instance.UserInfoAct.userXp = currentXp;
+        yield return null;
+    }
+
+    private IEnumerator lvlUp(){
+        _lvlupFader.GetComponent<UIFader>().Fade(FadeTransition.In);
+        yield return new WaitForSeconds(2f);
+        _lvlupFader.GetComponent<UIFader>().Fade(FadeTransition.Out);
+        yield return null;
+    }
+
+    private int calculateXp(){
+        int temp = (winner == "local")?15:5;
+        if(battleSettings.battletype == BattleType.OnlineSetup){
+            temp = temp/3;
+        }
+        if(battleSettings.battletype == BattleType.Offline && GameManager.instance.UserInfoAct.userLvl>3){
+            temp = 0;
+        }
+        if(abandoned){
+            temp = 0;
+        }
+        return temp;
+    }
+
+    private IEnumerator rankAnimation(){
+        int modifierRank = (winner=="local")?5:-3;
+        int currentRank = GameManager.instance.UserInfoAct.userClassement;
+        int targetRank = currentRank+modifierRank;
+        _rankPanel.GetComponent<UIFader>().Fade(FadeTransition.In);
+        _txtRanking.text = currentRank.ToString();
+        yield return new WaitForSeconds(1f);
+        while(currentRank != targetRank ){
+            if(currentRank<targetRank){
+                currentRank++;
+            }else{
+                currentRank--;
+            }
+            _txtRanking.text = currentRank.ToString();
+            yield return new WaitForSeconds(0.2f);
+        }
+        yield return new WaitForSeconds(2f);
+        yield return null; 
+
+    }
+
     private string float2minute(float temps){
         string minute = (Mathf.Floor(temps/60) == 0)? "":Mathf.Floor(temps/60).ToString();
         string seconde = (minute == "")?"":":";
@@ -213,10 +359,10 @@ public class BattleManager : MonoBehaviour {
 
     
     private void showHealth(){
-        visitorHealthText.text = Mathf.RoundToInt(visitorBot.percentHP()).ToString()+"%";
-        localHealthText.text = Mathf.RoundToInt(localBot.percentHP()).ToString()+"%";
-        localHealthSlider.value = localBot.percentHP();
-        visitorHealthSlider.value = visitorBot.percentHP();
+        _visitorHealthText.text = Mathf.RoundToInt(visitorBot.percentHP()).ToString()+"%";
+        _localHealthText.text = Mathf.RoundToInt(localBot.percentHP()).ToString()+"%";
+        _localHealthSlider.value = localBot.percentHP();
+        _visitorHealthSlider.value = visitorBot.percentHP();
     }
 
     private IEnumerator getWinner() {
@@ -248,8 +394,27 @@ public class BattleManager : MonoBehaviour {
     public Bot SetVisitorBot {
         set {visitorBot = value;}
     }
+    public string CountdownValue{
+        get{return _textCountown.text;}
+        set{_textCountown.text = value;}
+    }
+    public string CountdownName {
+        set {_textFlip.text = value;}
+    }
+    public GameObject PanelFlip {
+        get{return _panneauFlipCountdown;}
+    }
+    public bool BotIsFlipped {
+        get{return _botIsFlipped;}
+        set{_botIsFlipped = value;}
+    }
     public void backtoMenu() {
-        GameManager.instance.changeScene(Scenes.MainMenu);
+        //GameManager.instance.changeScene(Scenes.MainMenu);
+        if(battleSettings.battletype != BattleType.OnlineQuick){
+            StartCoroutine(GameManager.instance.returnToMenu());
+        }else {
+            StartCoroutine(GameManager.instance.returnToMenu(true,battleSettings.visitorbot.ownerID,winner));
+        }
     }
     public void DeclareDeath(string deadName){
         if(deadName == "visitor") {

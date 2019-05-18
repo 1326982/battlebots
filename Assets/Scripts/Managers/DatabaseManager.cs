@@ -110,10 +110,10 @@ public class DatabaseManager : MonoBehaviour {
             botAct.platform = botInfo.botsPlatform;
             botAct.botID = botInfo.botsId;
             botAct.botsPrefered = botInfo.botsPrefered;
+            botAct.ownerID = botInfo.ownerID;
             botAct.botsName = botInfo.botsName;
             botAct.rotationSpeed = float.Parse(botInfo.botsRotationSpeed);
             botAct.speed = float.Parse(botInfo.botsSpeed);
-            botAct.weight = float.Parse(botInfo.botsWeight);
             string jsonAnchorPrepared = "{\"botsAnchorInfo\":" + botInfo.botsAnchorInfo + "}" ;
             JsonAnchorWrapper listPartsJson = JsonUtility.FromJson<JsonAnchorWrapper>(jsonAnchorPrepared);
             botAct.listParts = new AnchorInfo[listPartsJson.botsAnchorInfo.Length];

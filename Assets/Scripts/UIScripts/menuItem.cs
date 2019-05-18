@@ -19,16 +19,20 @@ public class menuItem : MonoBehaviour
 {
     [SerializeField] public Text texteItem;
     [SerializeField] public RawImage imageItem;
+    [SerializeField] public GameObject lockFilter;
+    [SerializeField] public Text lockText;
     private RectTransform _rect;
     public string callback;
     public string nomPiece;
     private float initialSize;
     private float bigSize;
 
+
     private void Start() {
         _rect = GetComponent<RectTransform>();
         initialSize = _rect.localScale.x;
         bigSize = initialSize+((initialSize/100)*40);
+
     }
 
     public void btnAction() {

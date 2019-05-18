@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _valDommage: 15
-  _valKnockBack: 8
+  _valKnockBack: 1
 --- !u!64 &4265628430635086864
 MeshCollider:
   m_ObjectHideFlags: 0

@@ -16,6 +16,7 @@ using UnityEngine;
 
 [Serializable]
 public class HttpBots {
+    public string ownerID;
     public string botsId;
     public string botsName;
     public string botsSlot;

@@ -16,14 +16,18 @@ public class ItemInfo  {
     public string name;
     public string callback;
     public string nomPiece;
+    public string pathimg;
     public bool isMiniThumb;
+    public int lvlLock;
 
 
-    public ItemInfo(string nom, string pathimg, string call, string piece ,bool isMiniThumbConst){
+    public ItemInfo(string nom, string tmppathimg, string call, string piece ,bool isMiniThumbConst,int levelLock=0){
         name = nom;
         callback = call;
+        pathimg = tmppathimg;
         nomPiece = piece;
         isMiniThumb = isMiniThumbConst;
+        lvlLock = levelLock;
     }
 
     

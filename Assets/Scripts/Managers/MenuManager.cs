@@ -19,6 +19,14 @@ using UnityEngine.EventSystems;
 public class MenuManager : MonoBehaviour {
     public static MenuManager instance;
 
+    private Dictionary<PieceType,int[]> _tPieceLimite = new Dictionary<PieceType, int[]>(){
+        {PieceType.Attack , new int[9]{1,2,3,3,4,6,8,8,10} },
+        {PieceType.Defense , new int[9]{2,2,3,3,4,4,6,6,10} },
+        {PieceType.Locomotion , new int[9]{4,4,4,5,6,8,10,12,12} }
+    };
+
+    [SerializeField] private AudioClip musiqueMenu;
+
     [SerializeField] private Transform botSpawnPos;
     [SerializeField] private menuBar barreMenu;
     [SerializeField] private ProfileInfoPanel panelinfo;
@@ -32,6 +40,10 @@ public class MenuManager : MonoBehaviour {
     [SerializeField] private Dropdown dropdownBots;
     [SerializeField] private InputField changeNameInput;
     [SerializeField] private Toggle togglePreffered;
+    [SerializeField] private GameObject bgFader;
+    [SerializeField] private Text usernameTextMultiplayer;
+
+    public string menuCustomeAct = "";//roues bases armesMelee defense
 
     private Bot showedBot;
 
@@ -46,6 +58,14 @@ public class MenuManager : MonoBehaviour {
     private GameObject slideSelectedPartInDMs = null;
     private int SelectedPartFingerID = 0;
     private string modalParamBase;
+
+    private int nbPieceDef = 0;
+    private int nbPieceAtt = 0;
+    private int nbPieceMove = 0;
+
+    [SerializeField] Text textLimit;
+    [SerializeField] UIFader fadeLimit;
+
     
     private string menuParam;
 
@@ -60,6 +80,8 @@ public class MenuManager : MonoBehaviour {
             Destroy(this.gameObject);
         }
     }
+
+
     private void Start() {
         UserInfo info = GameManager.instance.UserInfoAct;
         panelinfo.txtranking.text =  info.userClassement.ToString();
@@ -70,6 +92,81 @@ public class MenuManager : MonoBehaviour {
         populateBotsDropDown();
         botContainer = new GameObject();
         spawnEditBot();
+        usernameTextMultiplayer.text = GameManager.instance.UserInfoAct.username;
+        bgFader.GetComponent<UIFader>().Fade(FadeTransition.Out);
+    }
+
+    public void resetPiecesCount(){
+        nbPieceDef = 0;
+        nbPieceAtt = 0;
+        nbPieceMove = 0;
+    }
+    public void addPieceCountMenu(){
+        switch(menuCustomeAct){
+            case "armesMelee":
+            nbPieceAtt++;
+            showLimit(PieceType.Attack);
+            break;
+            case "defense":
+            nbPieceDef++;
+            showLimit(PieceType.Defense);
+            break;
+            case "roues":
+            nbPieceMove++;
+            showLimit(PieceType.Locomotion);
+            break;
+        }
+
+    }
+
+    public void addPieceCount(PieceType type){
+        switch(type){
+            case PieceType.Attack:
+            nbPieceAtt++;
+            break;
+            case PieceType.Defense:
+            nbPieceDef++;
+            break;
+            case PieceType.Locomotion:
+            nbPieceMove++;
+            break;
+        }
+    }
+
+    public void showLimit(PieceType type = PieceType.Attack){
+        int lvl = GameManager.instance.UserInfoAct.userLvl+1;
+        switch(menuCustomeAct){
+            case "armesMelee":
+            textLimit.text = nbPieceAtt.ToString() + " / " + _tPieceLimite[type][lvl]; 
+            break;
+            case "defense":
+            textLimit.text = nbPieceDef.ToString() + " / " + _tPieceLimite[type][lvl]; 
+            break;
+            case "roues":
+            textLimit.text = nbPieceMove.ToString() + " / " + _tPieceLimite[type][lvl]; 
+            break;
+        }
+        fadeLimit.Fade(FadeTransition.In);
+    }
+
+    public bool canAddPieces(){
+        int lvl = GameManager.instance.UserInfoAct.userLvl+1;
+        PieceType type = PieceType.Attack;
+        int nbPieceTemp = 0;
+        if(menuCustomeAct == "armesMelee"){
+            type = PieceType.Attack;
+            nbPieceTemp = nbPieceAtt;
+        }else if(menuCustomeAct == "defense"){
+            type = PieceType.Defense;
+            nbPieceTemp = nbPieceDef;
+        }else if(menuCustomeAct == "roues"){
+            type = PieceType.Locomotion;
+            nbPieceTemp = nbPieceMove;
+        }
+        if(nbPieceTemp < _tPieceLimite[type][lvl]){
+            return true;
+        }
+        return false;
     }
 
 
@@ -291,6 +388,8 @@ public class MenuManager : MonoBehaviour {
     private void trashItem() {
         hasChangedSinceLastSave = true;
         EditorInfo editorInfoActuel = selectedPart.GetComponent<EditorInfo>();
+        removeFromLimit(editorInfoActuel.nomItem);
+        showLimit();
         // la position avant déplacement de la pièce
         int oldAnchorPos = editorInfoActuel.linkedAnchor.GetComponent<AnchorPlace>().infos.anchorPos;
         // L'ancre avant déplacement de la pièce
@@ -305,6 +404,17 @@ public class MenuManager : MonoBehaviour {
         trashUI.fingerid=0;
         trashUI.isSelecting = false;
         
+    }
+    private void removeFromLimit(string nom){
+        if(nom.Contains("weapon")){
+            nbPieceAtt--;
+        }else if(nom.Contains("defense")){
+            nbPieceDef--;
+        }else if(nom.Contains("roue")){
+            nbPieceMove--;
+        }
+        
+
     }
     private void swapAnchor(RaycastHit hit){
         // les info de la pièce en déplacement
@@ -333,6 +443,7 @@ public class MenuManager : MonoBehaviour {
     }
 
     public void spawnEditBot() {
+        resetPiecesCount();
         hasChangedSinceLastSave = false;
         GameObject botSpawner = new GameObject();
         botSpawner.transform.position = botSpawnPos.position;
@@ -369,6 +480,7 @@ public class MenuManager : MonoBehaviour {
         spawnbotEdit();
     }
     public void spawnbotEdit(){
+        resetPiecesCount();
         Destroy(botContainer);
         botContainer = new GameObject();
         spawnEditBot();
@@ -390,13 +502,16 @@ public class MenuManager : MonoBehaviour {
 
 
     public void callplacerItem() {
-        blockItemClick = false;        
-        cameraMenu.blockCam = true;
-        GameObject item = Instantiate(loadGO("edit"+menuParam),transitAnchor.transform.position,transitAnchor.transform.rotation);
-        item.transform.parent = botContainer.transform;
-        editorInfoFiller(item.GetComponent<EditorInfo>(),menuParam);
-
-        slideSelectedPartInDMs = item;
+        if(canAddPieces()){
+            addPieceCountMenu();
+            
+            blockItemClick = false;        
+            cameraMenu.blockCam = true;
+            GameObject item = Instantiate(loadGO("edit"+menuParam),transitAnchor.transform.position,transitAnchor.transform.rotation);
+            item.transform.parent = botContainer.transform;
+            editorInfoFiller(item.GetComponent<EditorInfo>(),menuParam);
+            slideSelectedPartInDMs = item;
+        }
        
 
     }
@@ -405,9 +520,16 @@ public class MenuManager : MonoBehaviour {
         GameManager.instance.changeScene(Scenes.botMaker);
     }
     public void callbattle(){
-        GameManager.instance.startBattle(menuParam);
+        StartCoroutine(toBattle(menuParam));
+    }
+    public IEnumerator toBattle(string param){
+        bgFader.GetComponent<UIFader>().Fade(FadeTransition.In);
+        yield return new WaitForSeconds(0.6f);
+        GameManager.instance.startBattle(param);
+        yield return null;
     }
     public void callcustomize(){
+        fadeLimit.Fade(FadeTransition.Out);
         isEditing = true;
         barreMenu.montrerCustomize();
     }
@@ -506,4 +628,7 @@ public class MenuManager : MonoBehaviour {
     }
 
 
+}
+public enum PieceType {
+    Defense,Attack,Locomotion
 }

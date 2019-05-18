@@ -282,7 +282,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _valDommage: 1.5
-  _valKnockBack: 0.5
+  _valKnockBack: 1
 --- !u!114 &5666348170437602864
 MonoBehaviour:
   m_ObjectHideFlags: 0

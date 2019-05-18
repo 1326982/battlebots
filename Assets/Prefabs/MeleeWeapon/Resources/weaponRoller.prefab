@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _valDommage: 1
-  _valKnockBack: 5
+  _valKnockBack: 3
 --- !u!64 &6119900707454473843
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -344,7 +344,6 @@ MonoBehaviour:
   health: 60
   componentAdetruire:
   - {fileID: 273290606121980115}
-  - {fileID: 6243197443494013874}
   bringDownWithIt: []
 --- !u!114 &273290606121980115
 MonoBehaviour:

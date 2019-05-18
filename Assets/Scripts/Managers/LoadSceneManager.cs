@@ -21,10 +21,14 @@ public class LoadSceneManager : MonoBehaviour {
     [SerializeField] Slider sliderProgress;
 
     void Start() {
-        StartCoroutine(AsynchronousLoad(GameManager.instance.SceneToLoad));
+        if(GameManager.instance.SceneToLoad == Scenes.Battle){
+            StartCoroutine(loadBattle(GameManager.instance.SceneToLoad));
+        }else if(GameManager.instance.SceneToLoad == Scenes.MainMenu){
+            StartCoroutine(loadMenu(GameManager.instance.SceneToLoad));
+        }
     }
 
-    IEnumerator AsynchronousLoad (Scenes scene) {
+    IEnumerator loadBattle (Scenes scene) {
         AsyncOperation ao = SceneManager.LoadSceneAsync(scene.ToString());
         ao.allowSceneActivation = false;
         bool ready = false;
@@ -39,6 +43,25 @@ public class LoadSceneManager : MonoBehaviour {
             sliderProgress.value = _progress;
             // Loading completed
             if (_progress>90f) {
+                ao.allowSceneActivation = true;
+            }
+            
+            yield return null;
+        }
+    }
+    IEnumerator loadMenu (Scenes scene) {
+        AsyncOperation ao = SceneManager.LoadSceneAsync(scene.ToString());
+        ao.allowSceneActivation = false;
+        bool ready = false;
+        while (!ready) {
+            yield return new WaitForSeconds(0.1f);
+            // [0, 0.9] > [0, 1]
+            float tempProgress = 0f;
+            tempProgress += ao.progress / 0.9f *25f;
+            _progress = tempProgress;
+            sliderProgress.value = _progress;
+            // Loading completed
+            if (GameManager.instance.MenuReady) {
                 ao.allowSceneActivation = true;
             }
             

@@ -142,6 +142,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   texteItem: {fileID: 2927554945042021580}
   imageItem: {fileID: 2927554945042021581}
+  lockFilter: {fileID: 0}
+  lockText: {fileID: 0}
   callback: showNotifications
   nomPiece: 
 --- !u!114 &2927554945042021587
@@ -267,17 +269,17 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 120
-    m_FontStyle: 1
-    m_BestFit: 0
-    m_MinSize: 0
+    m_Font: {fileID: 12800000, guid: 5fcb85bd0c171ac40910ab86227d0db4, type: 3}
+    m_FontSize: 115
+    m_FontStyle: 0
+    m_BestFit: 1
+    m_MinSize: 115
     m_MaxSize: 120
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
-    m_VerticalOverflow: 0
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Notifications
 --- !u!114 &2927554945042021571
@@ -360,7 +362,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: 5fcb85bd0c171ac40910ab86227d0db4, type: 3}
     m_FontSize: 50
     m_FontStyle: 0
     m_BestFit: 0

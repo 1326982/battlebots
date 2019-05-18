@@ -17,4 +17,8 @@ public class BattleSettings {
     public GameObject Scenery;
     public BotBuilder localbot;
     public BotBuilder visitorbot;
+    public string opponentBotName;
+    public string opponentUsername;
+    public string opponentID;
+    public BattleType battletype;
 }

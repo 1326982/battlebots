@@ -35,15 +35,18 @@ public class GameManager : MonoBehaviour {
     private int selectedBot = 0;
     /**/
 
-    
+    private XpPack _lastBattleXp;
     private BotBuilder opponent;
     private int opponentBotID;
+    private string opponentUsername;
+    private string opponentID;
     private HttpOpponent nextOpponent;
     private bool localLoaded = false;
     private bool opponentLoaded = false;
     private bool battleReady = false;
     private BattleSettings battleSettings;
     private Scenes asyncSceneLoad;
+    private bool _menuReady = false;
 
 
     // Start is called before the first frame update
@@ -80,6 +83,40 @@ public class GameManager : MonoBehaviour {
           SceneManager.LoadScene(sceneName.ToString());
     }
 
+    public IEnumerator returnToMenu(bool ranked=false,string opponentId = "0",string winner = "yolo"){
+        asyncSceneLoad = Scenes.MainMenu;
+        SceneManager.LoadScene(Scenes.sceneLoader.ToString());
+        if(ranked){
+            string query = "&action=adjustRank&usersID="+PlayerPrefs.GetString("usersID")+"&opponentID="+opponentID+"&winner="+winner;
+            StartCoroutine(DatabaseManager.instance.Query(rankSetCallback,query));
+        }else {
+            setNewXp();
+        }
+        yield return null;
+
+    }
+
+    private void setNewXp(){
+        XpPack pack = _lastBattleXp; 
+        string query = "&action=setLvl&usersID="+PlayerPrefs.GetString("usersID")+"&xp="+pack.xp+"&xpNext="+pack.xpNext+ "&lvl="+pack.lvl;
+        StartCoroutine(DatabaseManager.instance.Query(setnewXpCallback,query));
+    }
+
+    private void setnewXpCallback(string response){
+        string query = "&action=getUserInfo&usersID="+ PlayerPrefs.GetString("usersID");
+        StartCoroutine(DatabaseManager.instance.Query(reloadToMenu,query));
+    }
+
+    private void rankSetCallback(string repsonse){
+        setNewXp();
+    }
+
+    private void reloadToMenu(string response){
+        HttpUserInfo userInfo = JsonUtility.FromJson<HttpUserInfo>(response);
+        GameManager.instance.SetUserInfo(userInfo);
+        _menuReady = true;
+    }
+
     private IEnumerator loadBattleRoutine(BattleType type, int opponentId = 0) {
         asyncSceneLoad = Scenes.Battle;
         SceneManager.LoadScene(Scenes.sceneLoader.ToString());
@@ -93,27 +130,41 @@ public class GameManager : MonoBehaviour {
         if(type == BattleType.Offline){
             yield return StartCoroutine(generateOpponent("singleplayer"));
             while(!opponentLoaded) {
-                yield return new WaitForSeconds(0.5f);
+                yield return 0;
             }
             battleSettings.visitorbot = opponent;
         }else if(type == BattleType.OnlineQuick) {
             yield return StartCoroutine(generateOpponent("multiplayer"));
             while(!opponentLoaded) {
-                yield return new WaitForSeconds(0.5f);
+                yield return 0;
             }
             battleSettings.visitorbot = opponent;
         }else if (type == BattleType.OnlineSetup){
             yield return StartCoroutine(generateOpponent("friendly"));
             while(!opponentLoaded) {
-                yield return new WaitForSeconds(0.5f);
+                yield return 0;
             }
             battleSettings.visitorbot = opponent;
         }
+        battleSettings.opponentUsername = opponentUsername;
+        battleSettings.opponentID = opponentID;
+        battleSettings.battletype = type;
         yield return battleSettings.localbot = GetActiveBot;
         localLoaded = true;
         yield return battleSettings.Scenery = sceneryList["Plain"];
-        yield return new WaitForSeconds(0.5f);
+        yield return 0;
         yield return null;
+    }
+    public IEnumerator getOpponentName(string id){
+        string query = "&action=getUserInfo&usersID="+id;
+        yield return StartCoroutine(DatabaseManager.instance.Query(getOpponentNameCallback,query));
+        yield return null;
+    }
+    private void getOpponentNameCallback(string response) {
+        HttpUserInfo userInfo = JsonUtility.FromJson<HttpUserInfo>(response);
+        opponentUsername = userInfo.username;
+        opponentLoaded = true;
+        
     }
 
     private IEnumerator generateOpponent(string typeOpponent) {
@@ -132,23 +183,22 @@ public class GameManager : MonoBehaviour {
         yield return StartCoroutine(DatabaseManager.instance.Query(loadOpponent,query));
         yield return null;
     }
-    private IEnumerator fetchOpponent(int botID) {
-        opponent = myBots[2];
-        return null;
-    }
     public void loadOpponent(string response) {
         HttpBots botloaded = JsonUtility.FromJson<HttpBots>(response);
         opponent = fillBotbuilder(botloaded);
-        opponentLoaded = true;
+        //opponentLoaded = true;
+        opponentID = opponent.ownerID;
+        StartCoroutine(getOpponentName(opponent.ownerID));
     }
+
     private BotBuilder fillBotbuilder(HttpBots botInfo) {
         BotBuilder botAct = new BotBuilder();
         botAct.platform = botInfo.botsPlatform;
         botAct.botID = botInfo.botsId;
+        botAct.ownerID = botInfo.ownerID;
         botAct.botsName = botInfo.botsName;
         botAct.rotationSpeed = float.Parse(botInfo.botsRotationSpeed);
         botAct.speed = float.Parse(botInfo.botsSpeed);
-        botAct.weight = float.Parse(botInfo.botsWeight);
         string jsonAnchorPrepared = "{\"botsAnchorInfo\":" + botInfo.botsAnchorInfo + "}" ;
         JsonAnchorWrapper listPartsJson = JsonUtility.FromJson<JsonAnchorWrapper>(jsonAnchorPrepared);
         botAct.listParts = new AnchorInfo[listPartsJson.botsAnchorInfo.Length];
@@ -163,7 +213,18 @@ public class GameManager : MonoBehaviour {
         return botAct;
     }
 
+    public int calculateNextXp(int nextLevel){
+        int norm = 100;
+        float growth = 1.48f;
+        int prevRawXp = Mathf.RoundToInt(((Mathf.Log(nextLevel-1)*(growth))*norm));
+        int rawXp =  Mathf.RoundToInt(((Mathf.Log(nextLevel)*(growth))*norm)); 
+        return (rawXp - (rawXp%10))+(prevRawXp - (prevRawXp%10));
+    }
+
+
     /*Interragir avec le gameManager*/
+
+
     public void SetUserInfo(HttpUserInfo userinfo) {
         user.cash = userinfo.cash;
         user.userLvl = userinfo.userLvl;
@@ -216,6 +277,12 @@ public class GameManager : MonoBehaviour {
     }
     public void resetBattlePrep() {
         battleReady = opponentLoaded = localLoaded = false;
+    }
+    public bool MenuReady{
+        get{return _menuReady;}
+    }
+    public XpPack SetXpPack{
+        set{_lastBattleXp = value;}
     }
 
 
